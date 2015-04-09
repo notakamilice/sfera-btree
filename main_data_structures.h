@@ -43,15 +43,16 @@ typedef struct block {
 //Database API
 typedef struct DB {
 	//Service information
-	int fd;					//filedescriptor
-	size_t block_size; 		//
-	size_t block_num; 		//number of blocks
-	size_t bitmap_size; 	//
-	bool* bitmap; 			//bad bitmap (bytemap)
-	size_t root_ind; 		//root index
-	size_t start_ind; 		//first block index
+	int fd;						//filedescriptor
+	size_t block_size; 			//
+	size_t block_num; 			//number of blocks
+	size_t bitmap_size; 		//
+	bool* bitmap; 				//bad bitmap (bytemap)
+	size_t bitmap_num_blocks;	//how many blocks bitmap use
+	size_t root_ind; 			//root index
+	size_t start_ind; 			//first block index
 	
-	block* root; 			//root block
+	block* root; 				//root block
 	
 	/* Public API */
 	/* Returns 0 on OK, -1 on Error */
