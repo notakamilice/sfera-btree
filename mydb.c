@@ -25,19 +25,34 @@ DB* dbcreate(char* file, DBC* conf) {
 		return NULL;
 	}
 	
-	size_t b_n=conf->db_size/conf->page_size;
-	size_t bitm_s= b_n;
-	bool *bitm=(bool *)calloc(bitm_s, sizeof(bool));
+	size_t bl_size=conf->page_size;
+	size_t number_of_blocks=conf->db_size/bl_size;
+	size_t bitm_size= number_of_blocks;
+	size_t bitm_num_blocks=ceil(bitm_size/bl_size);
+	bool *bitm=(bool *)calloc(bitm_size, sizeof(bool));
+	
 	
 	db->fd=fd;
-	db->block_size=conf->page_size;
-	db->block_num=b_n;
-	db->bitmap_size=bitm_s;
+	db->block_size=bl_size;
+	db->block_num=number_of_blocks;
+	db->bitmap_size=bitm_size;
+	db->bitmap_num_blocks=bitm_num_blocks;
 	db->bitmap=bitm;
-	db->start_ind=bitm+bitm_s;
-	db->root_ind=bitm+bitm_s;
-	db->root = (block *)calloc(1, sizeof(block));
+	db->root_ind=bitm_num_blocks+1; //block number following bitmap and 1 block of db-service info
+	db->start_ind=bitm_num_blocks+1;
 	
+	db->root = (block *)calloc(1, sizeof(block)); //********************
+	
+	printf("db information:");
+	printf("fd 						= %d\n",  db->fd);
+    printf("block_size    			= %lu\n", db->block_size);
+    printf("block_num     			= %lu\n", db->block_num);
+    printf("bitmap_size   			= %lu\n", db->bitmap_size);
+	printf("bitmap_num_blocks		= %lu\n", db->bitmap_num_blocks);
+    printf("root_index    			= %lu\n", db->root_ind);
+	printf("start_index   			= %lu\n", db->start_ind);
+	printf("root          			= %lu\n", db->root);
+    
 	
 }
 
