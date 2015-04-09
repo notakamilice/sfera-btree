@@ -38,7 +38,7 @@ int mark_block(DB* db, size_t nb, bool is_free) {
 	db->bitmap[nb]=is_free;
 	
 	//lseek to beginning of bitmap
-	size_t offset=db->block_size*4;
+	size_t offset=db->block_size;
 	if (lseek(db->fd, offset,SEEK_SET)==-1L) {
 		printf("Seek Error\n");
 		return -1;
