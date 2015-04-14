@@ -2,7 +2,7 @@
 
 #include "main_data_structures.h"
 
-//check
+//check functions
 
 size_t find_free_block(DB *db);
 int    mark_block(DB *db, size_t nb, bool is_free);
