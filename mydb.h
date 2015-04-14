@@ -1,8 +1,12 @@
+//header for call methods - work with database 
+
+#include "main_data_structures.h"
+#include "work_with_blocks.h"
+
 #include <stddef.h>
 #include <iostream>
 #include <stdio.h>
-#include "main_data_structures.h"
-#include "work_with_blocks.h"
+
 
 /* Open DB if it exists, otherwise create DB */
 struct DB *dbopen(char *file, struct DBC *conf);
