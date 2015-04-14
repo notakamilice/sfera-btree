@@ -1,3 +1,5 @@
+//header with main data structures
+
 #include <sys/time.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +26,6 @@ struct DBC {
 	size_t cache_size;
 };
 
-
 typedef struct DBT {
 	void  *data;
 	size_t size;
@@ -40,19 +41,26 @@ typedef struct block {
 	bool is_leaf; 			//if block is leaf
 } block;
 
+//Service information that will be written in file
+typedef struct file_info { 
+  	size_t block_size; 			//size of block
+	size_t block_num; 			//number of blocks
+	size_t root_ind; 			//root index
+  	
+} file_info;
+
 //Database API
 typedef struct DB {
-	//Service information
-	int fd;						//filedescriptor
-	size_t block_size; 			//
-	size_t block_num; 			//number of blocks
-	size_t bitmap_size; 		//
-	bool* bitmap; 				//bad bitmap (bytemap)
-	size_t bitmap_num_blocks;	//how many blocks bitmap use
-	size_t root_ind; 			//root index
-	size_t start_ind; 			//first block index
-	
-	block* root; 				//root block
+	int    fd;						//file descriptor
+	size_t block_size; 				//size of block
+	size_t block_num; 				//number of blocks
+	size_t bitmap_size; 			//length of bitmap
+	bool*  bitmap; 					//bad bitmap (bytemap)
+	size_t file_blocks_num;			//how many blocks (file_info + bitmap) use
+	size_t root_ind; 				//root index
+	size_t start_ind; 				//first block index
+	size_t max_key_size;			//for keys with certain length
+	block* root; 					//root block
 	
 	/* Public API */
 	/* Returns 0 on OK, -1 on Error */
