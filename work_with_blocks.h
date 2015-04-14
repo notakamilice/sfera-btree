@@ -1,5 +1,8 @@
+//private database API - work with blocks
+
 #include "main_data_structures.h"
 
+//check
 
 size_t find_free_block(DB *db);
 int    mark_block(DB *db, size_t nb, bool is_free);
@@ -39,7 +42,7 @@ int mark_block(DB* db, size_t nb, bool is_free) {
 	
 	//lseek to beginning of bitmap
 	size_t offset=db->block_size;
-	if (lseek(db->fd, offset,SEEK_SET)==-1L) {
+	if (lseek(db->fd, 3*sizeof(size_t),SEEK_SET)==-1L) {
 		printf("Seek Error\n");
 		return -1;
 	}
