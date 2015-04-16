@@ -9,10 +9,10 @@ int    mark_block(DB *db, size_t nb, bool is_free);
 block  *read_block(DB *db, size_t nb);
 int    write_block(DB *db, size_t nb, block *bl);
 
-
+//----------------------------------------------------------------------------------
 //find free block in file
-size_t find_free_block(DB* db) {
-	if (!db && !db->bitmap) {
+size_t find_free_block(DB *db) {
+	if (!db && !db->bitmap && !db->root) {
 	  	printf("database wasn't initialized\n");
 		return -1;
 	}
@@ -23,10 +23,10 @@ size_t find_free_block(DB* db) {
 	return -1;
 }
 
-
+//----------------------------------------------------------------------------------
 //mark block as free if it's full and vice versa
-int mark_block(DB* db, size_t nb, bool is_free) {
-	if (!db && !db->bitmap) {
+int mark_block(DB *db, size_t nb, bool is_free) {
+	if (!db && !db->bitmap && !db->root) {
 	  	printf("database wasn't initialized\n");
 		return -1;
 	}
@@ -51,10 +51,10 @@ int mark_block(DB* db, size_t nb, bool is_free) {
 	return 0;
 }
 
-
+//----------------------------------------------------------------------------------
 //read block nb from file
-block* read_block(DB* db, size_t nb) {
-	if (!db && !db->bitmap) {
+block* read_block(DB *db, size_t nb) {
+	if (!db && !db->bitmap && !db->root) {
 	  	printf("database wasn't initialized\n");
 		return -1;
 	}
@@ -155,11 +155,12 @@ block* read_block(DB* db, size_t nb) {
     return bl;
 }
 
-int write_block(DB* db, size_t nb, block* bl) {
+//----------------------------------------------------------------------------------
+int write_block(DB *db, size_t nb, block *bl) {
 	
 	//block can be written ? ***********************
 	
-	if (!db && !db->bitmap) {
+	if (!db && !db->bitmap && !db->root) {
 	  	printf("database wasn't initialized\n");
 		return -1;
 	}
