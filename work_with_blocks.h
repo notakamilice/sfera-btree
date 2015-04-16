@@ -86,8 +86,7 @@ block* read_block(DB *db, size_t nb) {
 			printf("memory for key-DBT wasn't allocated\n");
 	  		return -1;
 		}
-        bl->keys[i] = k_dbt;
-		
+        		
 		//read key-DBT size and data
 		read(db->fd,(void *)&k_dbt->size,sizeof(k_dbt->size));
 		k_dbt->data=(void *)calloc(1,k_dbt->size);
@@ -96,6 +95,8 @@ block* read_block(DB *db, size_t nb) {
 	  		return -1;
 		}
 		read(db->fd, k_dbt->data, k_dbt->size);
+		
+		bl->keys[i] = k_dbt;
 	}
     
 	//allocate memory for values
@@ -113,8 +114,7 @@ block* read_block(DB *db, size_t nb) {
 			printf("memory for value-DBT wasn't allocated\n");
 	  		return -1;
 		}
-		bl->values[i] = v_dbt;
-		
+				
 		//read value-DBT size and data
 		read(db->fd,(void *)&v_dbt->size,sizeof(v_dbt->size));
 		v_dbt->data=(void *)calloc(1,v_dbt->size);
@@ -123,6 +123,8 @@ block* read_block(DB *db, size_t nb) {
 	  		return -1;
 		}
 		read(db->fd, v_dbt->data, v_dbt->size);
+		
+		bl->values[i] = v_dbt;
     }
     
     // read number of children-blocks of nb block 
