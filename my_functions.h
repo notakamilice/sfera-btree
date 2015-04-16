@@ -18,3 +18,5 @@ int compare (DBT *key1, DBT *key2); //my_select
 int btree_insert_nonfull(DB *db, block *x, size_t x_i, DBT *key, DBT *value); //my_insert
 int btree_split_child(DB *db, block *x, size_t x_i, size_t child); //my_insert
 int new_root(DB *db, size_t fb_i); //my_insert
+block *fill_child(block *x, size_t from, size_t to); //my_insert
+int btree_insert_key_value(DB *db, block *x, size_t x_i, size_t child_i, DBT *key, DBT *value); //my_insert
