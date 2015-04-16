@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <iostream>
 
-
+//----------------------------------------------------------------------------------
 //configuration of database
 struct DBC {
 	/* Maximum on-disk file size
@@ -26,11 +26,13 @@ struct DBC {
 	size_t cache_size;
 };
 
+//----------------------------------------------------------------------------------
 typedef struct DBT {
 	void  *data;
 	size_t size;
 } DBT;
 
+//----------------------------------------------------------------------------------
 //Database block
 typedef struct block {
 	size_t kv_num; 			//number of key-value pairs
@@ -41,6 +43,7 @@ typedef struct block {
 	bool is_leaf; 			//if block is leaf
 } block;
 
+//----------------------------------------------------------------------------------
 //Service information that will be written in file
 typedef struct file_info { 
   	size_t block_size; 			//size of block
@@ -49,6 +52,7 @@ typedef struct file_info {
   	
 } file_info;
 
+//----------------------------------------------------------------------------------
 //Database API
 typedef struct DB {
 	int    fd;						//file descriptor
@@ -59,20 +63,20 @@ typedef struct DB {
 	size_t file_blocks_num;			//how many blocks (file_info + bitmap) use
 	size_t root_ind; 				//root index
 	size_t start_ind; 				//first block index
-	size_t max_key_size;			//for keys with certain length
+	//size_t max_key_size;			//for keys with uncertain length
 	block* root; 					//root block
 	
 	/* Public API */
 	/* Returns 0 on OK, -1 on Error */
 	int (*close)(struct DB *db);
-	int (*delete)(struct DB *db, struct DBT *key);
-	int (*insert)(struct DB *db, struct DBT *key, struct DBT *data);
+	int (*delete_)(struct DB *db, struct DBT *key);
+	int (*insert)(struct DB *db, struct DBT *key, struct DBT *value);
 	/* * * * * * * * * * * * * *
 	 * Returns malloc'ed data into 'struct DBT *data'.
 	 * Caller must free data->data. 'struct DBT *data' must be alloced in
 	 * caller.
 	 * * * * * * * * * * * * * */
-	int (*select)(struct DB *db, struct DBT *key, struct DBT *data);
+	int (*select)(struct DB *db, struct DBT *key, struct DBT *value);
 	/* Sync cached pages with disk
 	 * */
 	int (*sync)(struct DB *db);
