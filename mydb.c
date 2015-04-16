@@ -1,6 +1,8 @@
 #include "mydb.h"
+#include "my_functions.h"
 
-DB* dbopen(char* file, DBC* conf) {
+//----------------------------------------------------------------------------------
+DB* dbopen(char *file, DBC *conf) {
 	if (!file) {
 	  	printf("file isn't selected - can't open db");
 		return -1;
@@ -11,7 +13,8 @@ DB* dbopen(char* file, DBC* conf) {
 	
 }
 
-DB* dbcreate(char* file, DBC* conf) {
+//----------------------------------------------------------------------------------
+DB* dbcreate(char *file, DBC *conf) {
   	if (!file) {
 	  	printf("file isn't selected - can't create db");
 		return -1; 
@@ -42,7 +45,7 @@ DB* dbcreate(char* file, DBC* conf) {
 	db->file_blocks_num=file_blocks_num;
 	db->root_ind=file_blocks_num; 	//****************????????????? 
 	db->start_ind=file_blocks_num; //start_ind and root_ind point to the next block after file_info and bitmap  
-	db->max_key_size=0;
+	//db->max_key_size=0; //for uncertain key-length
 	db->root = (block *)calloc(1, sizeof(block)); //********************
 	
 	//fill root
@@ -66,7 +69,7 @@ DB* dbcreate(char* file, DBC* conf) {
 	printf("start_index   			= %lu\n", db->start_ind);
 	printf("----in file %lu blocks are used for service information", db->file_blocks_num);
 	
-	//write to file structure file_info and bitmap
+	//write structure file_info and bitmap  to file 
 	file_info *info = (file_info *)calloc(1, sizeof(file_info));
 	info->block_size=db->block_size;
 	info->block_num=db->block_num;
@@ -103,14 +106,14 @@ DB* dbcreate(char* file, DBC* conf) {
     db->close  = my_close;
     db->select = my_select;
 	db->insert = my_insert;
-    db->delete = my_delete;
+    db->delete_ = my_delete;
 	db->sync   = my_sync;
 
     return db;
 	
 }
 
-
+//----------------------------------------------------------------------------------
 int db_close(struct DB *db) {
 	return db->close(db);
 }
