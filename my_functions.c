@@ -28,7 +28,7 @@ int my_select(DB *db, DBT *key, DBT *value){
 }
 
 //-------------------------------------------------------------------------------------
-//должна вернуть упорядоченную пару (y,i) где y.key[i]==key (корман)
+//find key in btree - 0 if exist
 int btree_search(DB *db, block *bl, DBT *key, DBT *value) {
 	int return_value = 0;
    	size_t index=0;
@@ -100,7 +100,9 @@ int my_insert(DB *db, DBT *key, DBT *value) {
 }
 //-------------------------------------------------------------------------------------
 int btree_insert_nonfull(DB *db, block *x, size_t x_i, DBT *key, DBT *value) {}
+
 //-------------------------------------------------------------------------------------
+//function receive nonfull block x and index of his full child and split child node into 2
 int btree_split_child(DB *db, block *x, size_t x_i, size_t child_i) {
   	if (child_i>x->child_num) {
 	  	printf("error in btree_split_child with child_i\n");
@@ -108,19 +110,61 @@ int btree_split_child(DB *db, block *x, size_t x_i, size_t child_i) {
 	}
 	int return_value=0;
 	
-}
-//-------------------------------------------------------------------------------------
-int new_root(DB *db, size_t fb_i) {
-    free_block(db->root);
-    db->root = (block *)calloc(1, sizeof(block));
-	db->root->is_leaf = false;
-	db->root->child_num = 1;
-    db->root->child_ind = (size_t *)calloc(1, sizeof(size_t));
-    db->root->child_ind[0] = db->root_ind;
-    db->root_ind = fb_i;
+	//y and z will be child nodes (left and right resp.)
 	
-    return db->mark_block(db, fb_i, 0);//
+	//z - new block, z_i - its index
+	size_t z_i=db->find_free_block(db);
+	block *z;
+	
+	if (z_i >= 0) {
+		//y_i - index of full child
+		size_t y_i= x->child_ind[child_i];
+		block *y;
+		//read block with y_i index
+		block *read_bl = db->read_block(db, y_i);
+		if (!y) {
+		  	printf ("error in btree_split_child -read child\n");
+			return -1;
+		}
+		//fill y and z
+		size_t split_i = T-1;
+		y = fill_child(read_bl,0,split_i-1);
+		z = fill_child(read_bl,split_i+1,read_bl->child_num-1);
+		if (!y && !z) {
+		  	printf("error in btree_split_child - fill_child\n");
+			return -1;
+		}
+		
+		//move read_bl[split_i] into x
+		DBT *median_key = read_bl->keys[split_i];
+		DBT *median_value = read_bl->values[split_i];
+		
+		return_value = btree_insert_key_value(db, x, x_i, z_i, median_key, median_value);
+    	if (return_value != 0) {
+		  	printf ("error in btree_split_child -insert_median_to_parent\n");
+			
+		}
+		
+		//write y and z 
+		int ret_value1 = db->write_block(db,  y_i, y);
+		int ret_value2 = db->write_block(db,  z_i, z);
+		
+		if ( ret_value1 == 0 &&  ret_value2 == 0 && return_value ==0 ) return_value = 0;
+		else {
+			printf ("error in btree_split_child  - write_block \n");
+		  	return_value = -1;
+		}
+		
+    	free_block(y);
+    	free_block(z);
+	    	
+		
+	}
+	else return_value = -1;
+	
+	return return_value;
 }
+
 //****************************************************************************************
 int my_sync(DB *db){
 	/*
@@ -187,6 +231,88 @@ int compare (DBT *key1, DBT *key2) { // return >0 if key1>key2, ==0 if they equa
 }
 
 //-------------------------------------------------------------------------------------------
+int new_root(DB *db, size_t fb_i) {
+    free_block(db->root);
+    db->root = (block *)calloc(1, sizeof(block));
+	db->root->is_leaf = false;
+	db->root->child_num = 1;
+    db->root->child_ind = (size_t *)calloc(1, sizeof(size_t));
+    db->root->child_ind[0] = db->root_ind;
+    db->root_ind = fb_i;
+	
+    return db->mark_block(db, fb_i, 0);//
+}
+
+//-------------------------------------------------------------------------------------------
+
+block* fill_child(block* read_bl, size_t from, size_t to){
+	if (!bl && bl->kv_num > from && bl->kv_num < to) {
+	  	printf("error in fill_child\n");
+		return NULL;
+	}
+  	block *bl = (block *)calloc(1, sizeof(block));
+    bl->kv_num =  to - from + 1;
+	
+	bl->keys = (DBT **)calloc(bl->kv_num, sizeof(item *));
+	bl->values = (DBT **)calloc(bl->kv_num, sizeof(item *));
+	if (!bl->keys && !bl->values) {
+		printf("error in fill_child - memory for block->keys or block->values wasn't allocated\n");
+	  	return -1;
+	}
+		
+    //copy keys and values from read_bl to bl
+    for (int i = 0; i < bl->kv_num; i++) { 
+	  	int j = from+i;
+	  	DBT *key_j=read_bl->keys[j];
+		DBT *val_j=read_bl->values[j];
+		
+		//allocate memory for single key-DBT value-DBT
+		bl->keys[j] = (DBT *)calloc(1, sizeof(DBT));
+		bl->values[j] = (DBT *)calloc(1, sizeof(DBT));
+		
+		if (!bl->keys[j] && !bl->values[j]){
+			printf("error in fill_child  - memory for DBT wasn't allocated\n");
+	  		return -1;
+		}
+		
+		bl->keys[j]->size = key_j->size;
+		bl->values[j]->size = val_j->size;
+		bl->keys[j]->data = (void *)calloc(1,key_j->size);
+		bl->values[j]->data = (void *)calloc(1,val_j->size);
+		
+		if (!bl->keys[j]->data && !bl->values[j]->data){
+			printf("memory for DBT->data wasn't allocated\n");
+	  		return -1;
+		}
+		memcpy(bl->keys[j]->data, key_j->data, key_j->size);
+		memcpy(bl->values[j]->data, val_j->data, val_j->size);
+	}
+    
+    bl->is_leaf=read_bl->is_leaf;
+    
+	//copy children    
+    if (!read_bl->is_leaf) {
+	  	
+		bl->child_num=bl->kv_num +1;
+    	bl->child_ind = (size_t *)calloc(bl.child_num, sizeof(size_t));
+    	for (int i = 0; i < bl->child_num; i++) {
+		  	int j=from+i;
+    		bl->child_ind[i] = read_bl->child_ind[j];
+       	}
+    }
+    else {
+		bl->child_num = 0;
+	  	bl->child_ind =NULL;
+	}
+    
+    return bl;
+}
+
+//-------------------------------------------------------------------------------------------
+
+int btree_insert_key_value(DB* db, block* x, size_t x_i, size_t child_i, DBT* key, DBT* value) {
+	
+}
 
 
 
